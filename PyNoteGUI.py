@@ -1,20 +1,31 @@
 import sys
-from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QTextEdit, QAction,
-    QFileDialog, QMessageBox, QLabel
-)
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QAction, QLabel, QMessageBox
+from PyNoteOperations import PyNoteOperations
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.init_ui()
+
+    def init_ui(self):
         self.setWindowTitle("Note Taking App")
+        self.create_text_edit()
+        self.create_status_bar()
+        self.create_menu_bar()
+
+        self.file_operations = PyNoteOperations(self.text_edit)
+
+    def create_text_edit(self):
         self.text_edit = QTextEdit(self)
         self.setCentralWidget(self.text_edit)
         self.text_edit.textChanged.connect(self.update_character_count)
+
+    def create_status_bar(self):
         self.character_count_label = QLabel("Characters: 0", self)
         self.statusBar().addWidget(self.character_count_label)
 
+    def create_menu_bar(self):
         file_menu = self.menuBar().addMenu("&File")
 
         open_action = QAction("&Open", self)
@@ -33,17 +44,10 @@ class MainWindow(QMainWindow):
         file_menu.addAction(close_action)
 
     def open_file(self):
-        filename, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Text Files (*.txt)")
-        if filename:
-            with open(filename, "r") as file:
-                self.text_edit.setText(file.read())
+        self.file_operations.open_file(self)
 
     def save_file(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Text Files (*.txt)")
-        if filename:
-            with open(filename, "w") as file:
-                file.write(self.text_edit.toPlainText())
-            QMessageBox.information(self, "File Saved", "File saved successfully.")
+        self.file_operations.save_file(self)
 
     def close_file(self):
         if not self.text_edit.toPlainText():
