@@ -23,3 +23,8 @@ class PyNoteOperations:
                 QMessageBox.critical(parent, "Error Saving File", f"An error occurred while saving the file: {e}")
                 return False
         return False
+    def new_note(self, parent, app_instance):
+        from PyNoteGUI import MainWindow
+        new_window = MainWindow()
+        new_window.show()
+        app_instance.open_windows.append(new_window)

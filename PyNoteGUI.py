@@ -7,7 +7,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.init_ui()
-        self.text_edited = False
+        
 
     def init_ui(self):
         self.setWindowTitle("Note Taking App")
@@ -54,9 +54,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(close_action)
 
     def new_note(self):
-        new_window = MainWindow()
-        new_window.show()
-        app.open_windows.append(new_window)
+        self.file_operations.new_note(self, QApplication.instance())
 
     def open_file(self):
         self.file_operations.open_file(self)
