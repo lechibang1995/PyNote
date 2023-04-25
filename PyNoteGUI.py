@@ -7,6 +7,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.init_ui()
+        self.text_edited = False
 
     def init_ui(self):
         self.setWindowTitle("Note Taking App")
@@ -20,6 +21,10 @@ class MainWindow(QMainWindow):
         self.text_edit = QTextEdit(self)
         self.setCentralWidget(self.text_edit)
         self.text_edit.textChanged.connect(self.update_character_count)
+        self.text_edit.textChanged.connect(self.set_text_edited)
+
+    def set_text_edited(self):
+        self.text_edited = True
 
     def create_status_bar(self):
         self.character_count_label = QLabel("Characters: 0", self)
@@ -27,6 +32,11 @@ class MainWindow(QMainWindow):
 
     def create_menu_bar(self):
         file_menu = self.menuBar().addMenu("&File")
+
+        new_action = QAction("&New", self)
+        new_action.setShortcut("Ctrl+N")
+        new_action.triggered.connect(self.new_note)
+        file_menu.addAction(new_action)
 
         open_action = QAction("&Open", self)
         open_action.setShortcut("Ctrl+O")
@@ -43,35 +53,44 @@ class MainWindow(QMainWindow):
         close_action.triggered.connect(self.close_file)
         file_menu.addAction(close_action)
 
+    def new_note(self):
+        new_window = MainWindow()
+        new_window.show()
+        app.open_windows.append(new_window)
+
     def open_file(self):
         self.file_operations.open_file(self)
 
     def save_file(self):
-        self.file_operations.save_file(self)
+        if self.file_operations.save_file(self):
+            self.text_edited = False
 
     def close_file(self):
-        if not self.text_edit.toPlainText():
-            QApplication.quit()
-            return
-
-        response = QMessageBox().question(self, "", "Do you want to save your changes?", QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-        if response == QMessageBox.Save:
-            self.save_file()
-        elif response != QMessageBox.Cancel:
+        if self.confirm_save_changes():
             QApplication.quit()
 
     def closeEvent(self, event):
-        if not self.text_edit.toPlainText():
+        if self.confirm_save_changes():
             event.accept()
-            return
+        else:
+            event.ignore()
 
-        response = QMessageBox().question(self, "", "Do you want to save your changes?", QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+    def confirm_save_changes(self):
+        if not self.text_edit.toPlainText() or not self.text_edited:
+            return True
+
+        response = QMessageBox().question(self, "", "Do you want to save your changes?",
+                                          QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
         if response == QMessageBox.Save:
             self.save_file()
-        elif response == QMessageBox.Cancel:
-            event.ignore()
+            return True
+        elif response == QMessageBox.Discard:
+            return True
         else:
-            event.accept()
+            return False
+        
+    def reset_text_edited(self):
+        self.text_edited = False
 
     def update_character_count(self):
         character_count = len(self.text_edit.toPlainText())
@@ -79,6 +98,9 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.open_windows = []
     window = MainWindow()
+    app.open_windows.append(window)
     window.show()
     sys.exit(app.exec_())
+

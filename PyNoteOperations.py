@@ -9,10 +9,17 @@ class PyNoteOperations:
         if filename:
             with open(filename, "r") as file:
                 self.text_edit.setText(file.read())
+        parent.reset_text_edited()
 
     def save_file(self, parent):
         filename, _ = QFileDialog.getSaveFileName(parent, "Save File", "", "Text Files (*.txt)")
         if filename:
-            with open(filename, "w") as file:
-                file.write(self.text_edit.toPlainText())
-            QMessageBox.information(parent, "File Saved", "File saved successfully.")
+            try:
+                with open(filename, "w") as file:
+                    file.write(self.text_edit.toPlainText())
+                QMessageBox.information(parent, "File Saved", "File saved successfully.")
+                return True
+            except IOError as e:
+                QMessageBox.critical(parent, "Error Saving File", f"An error occurred while saving the file: {e}")
+                return False
+        return False
