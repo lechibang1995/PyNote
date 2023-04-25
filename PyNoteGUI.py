@@ -8,40 +8,29 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.init_ui()
-
-    def init_ui(self):
         self.setWindowTitle("Note Taking App")
-        self.create_text_edit()
-        self.create_status_bar()
-        self.create_menu_bar()
-
-    def create_text_edit(self):
         self.text_edit = QTextEdit(self)
         self.setCentralWidget(self.text_edit)
         self.text_edit.textChanged.connect(self.update_character_count)
-
-    def create_status_bar(self):
         self.character_count_label = QLabel("Characters: 0", self)
         self.statusBar().addWidget(self.character_count_label)
 
-    def create_menu_bar(self):
         file_menu = self.menuBar().addMenu("&File")
 
-        open_action = self.create_action("&Open", "Ctrl+O", self.open_file)
+        open_action = QAction("&Open", self)
+        open_action.setShortcut("Ctrl+O")
+        open_action.triggered.connect(self.open_file)
         file_menu.addAction(open_action)
 
-        save_action = self.create_action("&Save", "Ctrl+S", self.save_file)
+        save_action = QAction("&Save", self)
+        save_action.setShortcut("Ctrl+S")
+        save_action.triggered.connect(self.save_file)
         file_menu.addAction(save_action)
 
-        close_action = self.create_action("&Close", "Ctrl+W", self.close_file)
+        close_action = QAction("&Close", self)
+        close_action.setShortcut("Ctrl+W")
+        close_action.triggered.connect(self.close_file)
         file_menu.addAction(close_action)
-
-    def create_action(self, text, shortcut, triggered_function):
-        action = QAction(text, self)
-        action.setShortcut(shortcut)
-        action.triggered.connect(triggered_function)
-        return action
 
     def open_file(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Text Files (*.txt)")
@@ -61,7 +50,7 @@ class MainWindow(QMainWindow):
             QApplication.quit()
             return
 
-        response = self.show_save_changes_message_box()
+        response = QMessageBox().question(self, "", "Do you want to save your changes?", QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
         if response == QMessageBox.Save:
             self.save_file()
         elif response != QMessageBox.Cancel:
@@ -72,20 +61,13 @@ class MainWindow(QMainWindow):
             event.accept()
             return
 
-        response = self.show_save_changes_message_box()
+        response = QMessageBox().question(self, "", "Do you want to save your changes?", QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
         if response == QMessageBox.Save:
             self.save_file()
         elif response == QMessageBox.Cancel:
             event.ignore()
         else:
             event.accept()
-
-    def show_save_changes_message_box(self):
-        message_box = QMessageBox()
-        message_box.setText("Do you want to save your changes?")
-        message_box.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-        message_box.setDefaultButton(QMessageBox.Save)
-        return message_box.exec_()
 
     def update_character_count(self):
         character_count = len(self.text_edit.toPlainText())
