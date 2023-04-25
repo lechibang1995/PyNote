@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
             return True
 
         response = QMessageBox().question(self, "", "Do you want to save your changes?",
-                                          QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+         QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
         if response == QMessageBox.Save:
             self.save_file()
             return True
