@@ -1,6 +1,9 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QAction, QLabel, QMessageBox
 from PyNoteOperations import PyNoteOperations
+from PyNoteSettings import PyNoteSettings
+from PyQt5.QtGui import QFont, QFontDatabase
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -10,7 +13,7 @@ class MainWindow(QMainWindow):
         
 
     def init_ui(self):
-        self.setWindowTitle("Note Taking App")
+        self.setWindowTitle("PyNote")
         self.create_text_edit()
         self.create_status_bar()
         self.create_menu_bar()
@@ -53,6 +56,11 @@ class MainWindow(QMainWindow):
         close_action.triggered.connect(self.close_file)
         file_menu.addAction(close_action)
 
+        settings_menu = self.menuBar().addMenu("&Settings")
+        settings_action = QAction("&UI Settings", self)
+        settings_action.triggered.connect(self.show_settings_dialog)
+        settings_menu.addAction(settings_action)
+
     def new_note(self):
         self.file_operations.new_note(self, QApplication.instance())
 
@@ -72,6 +80,11 @@ class MainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def show_settings_dialog(self):
+        scale, ok = PyNoteSettings.get_settings(self)
+        if ok:
+            self.set_ui_scale(scale)
 
     def confirm_save_changes(self):
         if not self.text_edit.toPlainText() or not self.text_edited:
@@ -94,6 +107,11 @@ class MainWindow(QMainWindow):
         character_count = len(self.text_edit.toPlainText())
         self.character_count_label.setText(f"Characters: {character_count}")
 
+    def set_ui_scale(self, scale):
+        font = QApplication.font()
+        font.setPointSizeF(font.pointSizeF() * scale)
+        QApplication.setFont(font)
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.open_windows = []
@@ -101,4 +119,3 @@ if __name__ == "__main__":
     app.open_windows.append(window)
     window.show()
     sys.exit(app.exec_())
-
